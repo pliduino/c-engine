@@ -1,0 +1,6 @@
+*.o
+*.exe
+build
+.vscode
+-p
+external/

@@ -1,0 +1,9 @@
+Scene owns GameObjects
+GameObjects owns Components
+
+TODO:
+    Serializer
+
+
+1 2
+4 3
