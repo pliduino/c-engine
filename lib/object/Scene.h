@@ -14,6 +14,10 @@ public:
     Camera *mainCamera;
     std::vector<GameObject *> objects;
 
+    // Testing
+    Transform *transformToMove;
+    int i;
+
     Scene(/* args */);
     ~Scene();
 

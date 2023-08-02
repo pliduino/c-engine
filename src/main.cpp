@@ -16,29 +16,21 @@ int main(int argc, char const *argv[])
 {
     Scene *scene = new Scene();
 
-    ObjReader obj;
     GameObject *testObject = new GameObject();
     ModelRenderer *model = new ModelRenderer();
-
-    obj.ReadFile("models/cubeblender.obj");
-    obj.Triangulate(model->vertexData, model->textureData, model->normalData);
-
+    model->model->ReadFile("models/cubeblender.obj");
     model->shader = std::string("shaders/vertex.glsl");
     model->fragShader = std::string("shaders/fragment.glsl");
     testObject->AddComponent(model);
 
     GameObject *testObject2 = new GameObject();
     ModelRenderer *model2 = new ModelRenderer();
-
-    ObjReader obj2;
-    obj2.ReadFile("models/sphere.obj");
-    obj2.Triangulate(model2->vertexData, model2->textureData, model2->normalData);
-
+    model2->model->ReadFile("models/cube.obj");
     model2->shader = std::string("shaders/vertex.glsl");
     model2->fragShader = std::string("shaders/fragment.glsl");
     testObject2->AddComponent(model2);
     testObject2->AddComponent(new Oscilator(0.01, 3));
-    testObject2->AddComponent(new BoxCollider());
+    // testObject2->AddComponent(new BoxCollider());
 
     GameObject *cameraObj = new GameObject();
     Camera *camera = new Camera();
@@ -52,8 +44,8 @@ int main(int argc, char const *argv[])
     scene->Start();
 
     camera->transform->position = Vector3(0.0, 0.0, 5.0);
-    model->transform->position = Vector3(-3.0, 0.0, 0.0);
-    model->transform->scale = Vector3(5.0);
+    model->transform->position = Vector3(0.0, 2.0, 0.0);
+    model->transform->scale = Vector3(0.1);
     model2->transform->position = Vector3(3.0, 0.0, 0.0);
 
     Render *renderer = (new Render())->HideFps();

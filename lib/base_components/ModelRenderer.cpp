@@ -1,20 +1,22 @@
 #include "ModelRenderer.h"
 
+#include <iostream>
+
+#include "ObjReader.h"
 #include "GameObject.h"
 #include "Transform.h"
-#include "iostream"
 
 ModelRenderer::ModelRenderer(/* args */)
 {
-    vertexData = std::vector<float>();
+    model = new ObjReader();
 }
 
 ModelRenderer::~ModelRenderer()
 {
+    delete this->model;
 }
 
 void ModelRenderer::Start()
 {
-    GameObject *parent = this->GetParent();
-    parent->Require(&transform);
+    GetParent()->Require(&transform);
 }

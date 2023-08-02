@@ -25,6 +25,9 @@ public:
     T *GetComponent();
 
     template <class T>
+    bool TryGetComponent(T *&component);
+
+    template <class T>
     void Require(T **arg);
 
     template <class... R>

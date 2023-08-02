@@ -6,6 +6,8 @@
 #include "Component.h"
 #include "Transform.h"
 
+class ObjReader;
+
 enum ModelType
 {
     Static = 0,
@@ -19,7 +21,7 @@ private:
 public:
     std::string shader;
     std::string fragShader;
-    std::vector<float> vertexData;
+    ObjReader *model;
 
     ModelType type;
     ModelRenderer(/* args */);

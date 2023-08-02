@@ -17,6 +17,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include "std_image.h"
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
 
 #include "Camera.h"
 #include "Scene.h"
@@ -24,6 +27,7 @@
 #include "ModelRenderer.h"
 #include "Transform.h"
 #include "BmpLoader.h"
+#include "ObjReader.h"
 
 static const inline glm::mat4 CalcMVP(const Transform *transform);
 
@@ -55,34 +59,50 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 
+    if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_PRESS)
+    {
+        std::cout << scene->i << std::endl;
+        while (true)
+        {
+            scene->transformToMove = scene->objects[scene->i]->GetComponent<Transform>();
+
+            scene->i = scene->i < scene->objects.size() - 1 ? scene->i + 1 : 0;
+
+            if (scene->transformToMove != NULL)
+            {
+                break;
+            }
+        }
+    }
+
     if (key == GLFW_KEY_A && action == GLFW_REPEAT)
     {
-        scene->mainCamera->transform->position.x -= 0.3;
+        scene->transformToMove->position.x -= 0.3;
     }
 
     if (key == GLFW_KEY_D && action == GLFW_REPEAT)
     {
-        scene->mainCamera->transform->position.x += 0.3;
+        scene->transformToMove->position.x += 0.3;
     }
 
     if (key == GLFW_KEY_SPACE && action == GLFW_REPEAT)
     {
-        scene->mainCamera->transform->position.y += 0.3;
+        scene->transformToMove->position.y += 0.3;
     }
 
     if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_REPEAT)
     {
-        scene->mainCamera->transform->position.y -= 0.3;
+        scene->transformToMove->position.y -= 0.3;
     }
 
     if (key == GLFW_KEY_W && action == GLFW_REPEAT)
     {
-        scene->mainCamera->transform->position.z += 0.3;
+        scene->transformToMove->position.z += 0.3;
     }
 
     if (key == GLFW_KEY_S && action == GLFW_REPEAT)
     {
-        scene->mainCamera->transform->position.z -= 0.3;
+        scene->transformToMove->position.z -= 0.3;
     }
 }
 
@@ -91,8 +111,11 @@ static void error_callback(int error, const char *description)
     std::cerr << "Error: " << description;
 }
 
-void Render::render(Scene *scene)
+void Render::render(Scene *scn)
 {
+    this->scene = scn;
+    this->scene->transformToMove = scn->mainCamera->transform;
+
     Init();
 
     glfwSetWindowUserPointer(window, scene);
@@ -122,23 +145,17 @@ void Render::render(Scene *scene)
     // Ties to monitor refresh rate
     glfwSwapInterval(1);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8, (void *)0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8, (void *)3);
-    glVertexAttribPointer(
-        2,        // attribute
-        3,        // size
-        GL_FLOAT, // type
-        GL_FALSE, // normalized?
-        8,        // stride
-        (void *)6 // array buffer offset
-    );
-
     while (!glfwWindowShouldClose(window))
     {
         auto lastNow = std::chrono::high_resolution_clock::now();
 
         glClearColor(0.4f, 0.4f, 0.4f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        ImGui::ShowDemoWindow();
 
         auto camera = scene->mainCamera;
 
@@ -167,9 +184,13 @@ void Render::render(Scene *scene)
         glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(2);
 
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(window);
 
         scene->Update();
+
         glfwPollEvents();
 
         if (showFps)
@@ -327,6 +348,16 @@ inline void Render::Init()
         return;
     }
 
+    // Initializing IMGUI
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true); // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+    ImGui_ImplOpenGL3_Init();
+
     // Depth culling
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -334,14 +365,9 @@ inline void Render::Init()
 
 void Render::RenderObject(ModelRenderer *modelRenderer, glm::mat4 view, glm::mat4 projection)
 {
-    // glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
-    // glBufferData(GL_ARRAY_BUFFER, modelRenderer->normalData.size() * sizeof(float), &modelRenderer->normalData[0], GL_STATIC_DRAW);
-
-    // glBindBuffer(GL_ARRAY_BUFFER, uv_buffer);
-    // glBufferData(GL_ARRAY_BUFFER, modelRenderer->textureData.size() * sizeof(float), &modelRenderer->textureData[0], GL_STATIC_DRAW);
-    // Vertex should always go last for glDrawArrays
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, modelRenderer->vertexData.size() * sizeof(float), &modelRenderer->vertexData[0], GL_STATIC_DRAW);
+
+    glBufferData(GL_ARRAY_BUFFER, modelRenderer->model->vertexData.size() * sizeof(float), &modelRenderer->model->vertexData[0], GL_STATIC_DRAW);
 
     glm::mat4 model = CalcMVP(modelRenderer->transform);
 
@@ -365,9 +391,30 @@ void Render::RenderObject(ModelRenderer *modelRenderer, glm::mat4 view, glm::mat
     glUniformMatrix4fv(MatrixViewID, 1, GL_FALSE, &view[0][0]);
     GLuint MatrixProjectionID = glGetUniformLocation(programId, "projection");
     glUniformMatrix4fv(MatrixProjectionID, 1, GL_FALSE, &projection[0][0]);
-    GLuint MatrixLightPosID = glGetUniformLocation(programId, "LightPos");
-    glm::vec3 pos = glm::vec3(0.0, 2.0, 0.0);
-    glUniform3fv(MatrixLightPosID, 1, &pos[0]);
 
-    glDrawArrays(GL_TRIANGLES, 0, modelRenderer->vertexData.size() / 3);
+    GLuint LightPosID = glGetUniformLocation(programId, "LightPos");
+    Vector3 light = scene->objects[0]->GetComponent<Transform>()->position;
+    glm::vec3 pos = glm::vec3(light.x, light.y, light.z);
+    glUniform3fv(LightPosID, 1, &pos[0]);
+
+    GLuint CameraPosID = glGetUniformLocation(programId, "CameraPos");
+    Vector3 cameraPosition = scene->mainCamera->transform->position;
+    glm::vec3 cameraPos = glm::vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+    glUniform3fv(CameraPosID, 1, &cameraPos[0]);
+
+    // Vertices
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
+    // UVs
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(float), (void *)(3 * sizeof(GL_FLOAT)));
+    // Normals
+    glVertexAttribPointer(
+        2,                             // attribute
+        3,                             // size
+        GL_FLOAT,                      // type
+        GL_TRUE,                       // normalized?
+        8 * sizeof(float),             // stride
+        (void *)(0 * sizeof(GL_FLOAT)) // array buffer offset
+    );
+
+    glDrawArrays(GL_TRIANGLES, 0, modelRenderer->model->vertexData.size() / 8);
 }

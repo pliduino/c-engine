@@ -3,15 +3,18 @@
 #include <unordered_map>
 #include <string>
 
-#include <glm/glm.hpp>
+// TODO: fix this include
+#include <D:/Github/c-engine/external/glm/glm/glm.hpp>
 
 class Scene;
 class ModelRenderer;
+class Transform;
 
 typedef unsigned int GLuint;
 
 class GameObject;
 class GLFWwindow;
+class Scene;
 
 class Render
 {
@@ -21,6 +24,8 @@ private:
 
     GLuint vertex_buffer,
         vertex_array;
+
+    Scene *scene;
 
     bool showFps;
 

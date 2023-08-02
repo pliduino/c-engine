@@ -17,6 +17,8 @@ public:
 
     Transform(/* args */);
     ~Transform();
+
+    void Start() override;
     void Update() override;
 
     friend std::ostream &operator<<(std::ostream &os, const Transform &t);

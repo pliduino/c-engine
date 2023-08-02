@@ -5,6 +5,7 @@
 #include "ModelRenderer.h"
 #include "Vector3.h"
 #include "iostream"
+#include "ObjReader.h"
 
 BoxCollider::BoxCollider(/* args */)
 {
@@ -19,7 +20,7 @@ void BoxCollider::Start()
     GetParent()->Require<Transform>(&transform);
     ModelRenderer *model;
     GetParent()->Require<ModelRenderer>(&model);
-    boundingBox = BoundingBox(&model->vertexData[0], model->vertexData.size() / 3);
+    boundingBox = BoundingBox(&model->model->positions[0], model->model->positions.size());
 }
 
 void BoxCollider::Update()
