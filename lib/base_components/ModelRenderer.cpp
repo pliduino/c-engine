@@ -8,6 +8,7 @@
 
 ModelRenderer::ModelRenderer(/* args */)
 {
+    name = "ModelRenderer";
     model = new ObjReader();
 }
 

@@ -1,5 +1,9 @@
 #include "Vertex.h"
 
+Vertex::Vertex()
+{
+}
+
 Vertex::Vertex(Vector3 pos, Vector3 normal, Vector2 tex)
 {
     this->position = pos;

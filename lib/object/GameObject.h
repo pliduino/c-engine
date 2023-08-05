@@ -3,43 +3,47 @@
 #include <string>
 #include <vector>
 
+#include "pointers.h"
+
 class Transform;
 class Component;
 
 class GameObject
 {
 private:
-    std::string name;
-    std::vector<Component *> components;
+    std::vector<Owner<Component>> components;
 
 public:
+    std::string name;
+
     GameObject(/* args */);
+    GameObject(std::string name);
     ~GameObject();
 
-    std::vector<Component *> GetComponents();
+    std::vector<Borrow<Component>> GetComponents();
 
     template <class T>
-    std::vector<T *> GetComponents();
+    std::vector<Borrow<T>> GetComponents();
 
     template <class T>
-    T *GetComponent();
+    Borrow<T> GetComponent();
 
     template <class T>
-    bool TryGetComponent(T *&component);
+    bool TryGetComponent(Borrow<T> &component);
 
     template <class T>
-    void Require(T **arg);
+    void Require(Borrow<T> *arg);
 
     template <class... R>
     void Require(R... args);
 
-    void AddComponent(Component *component);
+    void AddComponent(Owner<Component> component);
 };
 
 template <class T>
-T *GameObject::GetComponent()
+Borrow<T> GameObject::GetComponent()
 {
-    T *value;
+    Borrow<T> value;
     for (auto &component : components)
     {
         value = dynamic_cast<T *>(component);
@@ -52,7 +56,7 @@ T *GameObject::GetComponent()
 }
 
 template <class T>
-std::vector<T *> GameObject::GetComponents()
+std::vector<Borrow<T>> GameObject::GetComponents()
 {
     std::vector<T *> componentVector = new std::vector<T *>();
 
@@ -69,7 +73,7 @@ std::vector<T *> GameObject::GetComponents()
 }
 
 template <class T>
-void GameObject::Require(T **arg)
+void GameObject::Require(Borrow<T> *arg)
 {
     *arg = GetComponent<T>();
 

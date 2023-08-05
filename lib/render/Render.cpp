@@ -15,6 +15,9 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "std_image.h"
 #include "imgui.h"
@@ -29,8 +32,7 @@
 #include "BmpLoader.h"
 #include "ObjReader.h"
 
-static const inline glm::mat4 CalcMVP(const Transform *transform);
-
+static inline glm::mat4 CalcMVP(const Transform *transform);
 static GLuint LoadShaders(const char *vertex_file_path, const char *fragment_file_path);
 
 Render::Render(/* args */)
@@ -55,54 +57,38 @@ Render *Render::HideFps()
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    Scene *scene = (Scene *)glfwGetWindowUserPointer(window);
+    Transform *transformToMove = *(Transform **)glfwGetWindowUserPointer(window);
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-    if (key == GLFW_KEY_LEFT_CONTROL && action == GLFW_PRESS)
-    {
-        std::cout << scene->i << std::endl;
-        while (true)
-        {
-            scene->transformToMove = scene->objects[scene->i]->GetComponent<Transform>();
-
-            scene->i = scene->i < scene->objects.size() - 1 ? scene->i + 1 : 0;
-
-            if (scene->transformToMove != NULL)
-            {
-                break;
-            }
-        }
-    }
-
     if (key == GLFW_KEY_A && action == GLFW_REPEAT)
     {
-        scene->transformToMove->position.x -= 0.3;
+        transformToMove->position.x -= 0.3;
     }
 
     if (key == GLFW_KEY_D && action == GLFW_REPEAT)
     {
-        scene->transformToMove->position.x += 0.3;
+        transformToMove->position.x += 0.3;
     }
 
     if (key == GLFW_KEY_SPACE && action == GLFW_REPEAT)
     {
-        scene->transformToMove->position.y += 0.3;
+        transformToMove->position.y += 0.3;
     }
 
     if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_REPEAT)
     {
-        scene->transformToMove->position.y -= 0.3;
+        transformToMove->position.y -= 0.3;
     }
 
     if (key == GLFW_KEY_W && action == GLFW_REPEAT)
     {
-        scene->transformToMove->position.z += 0.3;
+        transformToMove->position.z += 0.3;
     }
 
     if (key == GLFW_KEY_S && action == GLFW_REPEAT)
     {
-        scene->transformToMove->position.z -= 0.3;
+        transformToMove->position.z -= 0.3;
     }
 }
 
@@ -113,12 +99,13 @@ static void error_callback(int error, const char *description)
 
 void Render::render(Scene *scn)
 {
+    int tab = 0;
     this->scene = scn;
-    this->scene->transformToMove = scn->mainCamera->transform;
+    Transform *transformToMove = scn->mainCamera->transform;
 
     Init();
 
-    glfwSetWindowUserPointer(window, scene);
+    glfwSetWindowUserPointer(window, &transformToMove);
 
     GenBuffers();
 
@@ -129,15 +116,30 @@ void Render::render(Scene *scn)
     int width, height, channels;
     unsigned char *img = stbi_load("textures/w.bmp", &width, &height, &channels, 0);
 
-    // Texture filters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
     GLuint textureId;
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
     glGenerateMipmap(GL_TEXTURE_2D);
+    // Texture filters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+                 SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glGenVertexArrays(1, &vertex_array);
     glBindVertexArray(vertex_array);
@@ -145,75 +147,107 @@ void Render::render(Scene *scn)
     // Ties to monitor refresh rate
     glfwSwapInterval(1);
 
+    glClearColor(0.4f, 0.4f, 0.4f, 0.0f);
     while (!glfwWindowShouldClose(window))
     {
         auto lastNow = std::chrono::high_resolution_clock::now();
 
-        glClearColor(0.4f, 0.4f, 0.4f, 0.0f);
+        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        // Draw(scene->mainCamera, scene->objects[0]->GetComponent<Transform>());
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+
+        glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        ImGui::ShowDemoWindow();
+        ImGui::Begin("Scene");
 
-        auto camera = scene->mainCamera;
-
-        glm::mat4 view = glm::lookAt(
-            glm::vec3(camera->transform->position.x, camera->transform->position.y, camera->transform->position.z), // Camera is at (4,3,3), in World Space
-            glm::vec3(0, 0, 0),                                                                                     // and looks at the origin
-            glm::vec3(0, 1, 0));
-
-        glm::mat4 projection = glm::perspective(camera->fov, 4.0f / 3.0f, camera->near, camera->far);
-
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
-
-        for (auto &object : scene->objects)
+        ImGui::SameLine();
+        if (ImGui::Button("Scene"))
         {
-            ModelRenderer *modelRenderer = object->GetComponent<ModelRenderer>();
-            if (modelRenderer == NULL)
-            {
-                continue;
-            }
-            RenderObject(modelRenderer, view, projection);
+            tab = 0;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Debug"))
+        {
+            tab = 1;
         }
 
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
-        glDisableVertexAttribArray(2);
+        if (tab == 0)
+        {
+            for (int i = 0; i < scene->objects.size(); i++)
+            {
+                if (ImGui::Button(scene->objects[i]->name.c_str()))
+                {
+                    auto newTransform = scene->objects[i]->GetComponent<Transform>();
+                    if (newTransform != NULL)
+                    {
+                        transformToMove = newTransform;
+                    }
+                    else
+                    {
+                        std::cout << "This object has no transform" << std::endl;
+                    }
+                }
+                for (auto component : scene->objects[i]->GetComponents())
+                {
+                    ImGui::Text("  - %s", component->GetName().c_str());
+                }
+            }
+        }
+
+        if (tab == 1)
+        {
+            if (showFps)
+            {
+                ImGui::Text("FPS: %.2f", fps);
+            }
+            ImGui::Text("Ms: %.2f", mspf);
+        }
+
+        ImGui::End();
+
+        Draw(scene->mainCamera, scene->mainCamera->transform);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        glfwSwapBuffers(window);
 
         scene->Update();
 
         glfwPollEvents();
 
-        if (showFps)
-        {
-            std::cout << "FPS: " << 1000 / ((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - lastNow)).count() << "\n";
-        }
+        mspf = ((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - lastNow)).count();
+
+        glfwSwapBuffers(window);
+
+        fps = (1000 / ((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - lastNow)).count());
     }
 
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     glfwDestroyWindow(window);
     glfwTerminate();
     return;
 }
 
-static const inline glm::mat4 CalcMVP(const Transform *transform)
+static inline glm::mat4 CalcMVP(const Transform *transform)
 {
     glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(transform->position.x, transform->position.y, transform->position.z));
-    glm::mat4 rotate = glm::rotate(glm::mat4(1.0f), 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 rotate = glm::toMat4(glm::quat(transform->rotation.w, transform->rotation.x, transform->rotation.y, transform->rotation.z));
     glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(transform->scale.x, transform->scale.y, transform->scale.z));
 
     return translate * scale * rotate;
 }
 
-static GLuint LoadShaders(const char *vertex_file_path, const char *fragment_file_path)
+static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragment_file_path)
 {
 
     // Create the shaders
@@ -311,7 +345,37 @@ static GLuint LoadShaders(const char *vertex_file_path, const char *fragment_fil
 
 inline void Render::GenBuffers()
 {
-    glGenBuffers(1, &vertex_buffer);
+    glGenBuffers(1, &vbo);
+    glGenFramebuffers(1, &depthMapFBO);
+}
+
+inline void Render::Draw(Camera *camera, Transform *transform)
+{
+
+    glm::mat4 view = glm::lookAt(
+        glm::vec3(transform->position.x, transform->position.y, transform->position.z),
+        glm::vec3(0, 0, 0), // and looks at the origin
+        glm::vec3(0, 1, 0));
+
+    glm::mat4 projection = glm::perspective(camera->fov, 4.0f / 3.0f, camera->near, camera->far);
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+    for (auto &object : scene->objects)
+    {
+        ModelRenderer *modelRenderer = object->GetComponent<ModelRenderer>();
+        if (modelRenderer == NULL)
+        {
+            continue;
+        }
+        RenderObject(modelRenderer, view, projection);
+    }
+
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
 }
 
 inline void Render::Init()
@@ -330,7 +394,7 @@ inline void Render::Init()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Initializing Window
-    window = glfwCreateWindow(640, 480, "Title", NULL, NULL);
+    window = glfwCreateWindow(1280, 720, "Aura", NULL, NULL);
     if (!window)
     {
         std::cerr << "Window creation error";
@@ -354,7 +418,6 @@ inline void Render::Init()
     ImGuiIO &io = ImGui::GetIO();
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
-
     ImGui_ImplGlfw_InitForOpenGL(window, true); // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
     ImGui_ImplOpenGL3_Init();
 
@@ -363,9 +426,9 @@ inline void Render::Init()
     glDepthFunc(GL_LESS);
 }
 
-void Render::RenderObject(ModelRenderer *modelRenderer, glm::mat4 view, glm::mat4 projection)
+inline void Render::RenderObject(ModelRenderer *modelRenderer, glm::mat4 view, glm::mat4 projection)
 {
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
     glBufferData(GL_ARRAY_BUFFER, modelRenderer->model->vertexData.size() * sizeof(float), &modelRenderer->model->vertexData[0], GL_STATIC_DRAW);
 

@@ -1,8 +1,9 @@
 #pragma once
 
 #include <vector>
+#include <pointers.h>
 
-#include "Camera.h"
+class Camera;
 
 class GameObject;
 
@@ -11,12 +12,8 @@ class Scene
 private:
     /* data */
 public:
-    Camera *mainCamera;
-    std::vector<GameObject *> objects;
-
-    // Testing
-    Transform *transformToMove;
-    int i;
+    Borrow<Camera> mainCamera;
+    std::vector<Owner<GameObject>> objects;
 
     Scene(/* args */);
     ~Scene();

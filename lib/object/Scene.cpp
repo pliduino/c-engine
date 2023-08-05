@@ -5,7 +5,6 @@
 
 Scene::Scene(/* args */)
 {
-    i = 0;
 }
 
 Scene::~Scene()

@@ -1,9 +1,11 @@
 #include "Transform.h"
 
 #include <iostream>
+#include <format>
 
 Transform::Transform(/* args */)
 {
+    name = "Transform";
     position = Vector3();
     rotation = {0};
     scale = Vector3(1.0, 1.0, 1.0);

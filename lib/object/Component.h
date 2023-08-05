@@ -18,6 +18,7 @@ public:
 
     virtual void Start(void);
     virtual void Update(void);
+    std::string GetName();
 
     GameObject *GetParent();
     void SetParent(GameObject *parent);

@@ -7,6 +7,11 @@ GameObject::GameObject()
     name = "No name";
 }
 
+GameObject::GameObject(std::string name)
+{
+    this->name = name;
+}
+
 GameObject::~GameObject()
 {
     for (int i = 0; i < components.size(); i++)
@@ -15,12 +20,12 @@ GameObject::~GameObject()
     }
 }
 
-std::vector<Component *> GameObject::GetComponents()
+std::vector<Borrow<Component>> GameObject::GetComponents()
 {
     return components;
 }
 
-void GameObject::AddComponent(Component *component)
+void GameObject::AddComponent(Borrow<Component> component)
 {
     if (component == NULL || component->GetParent() != NULL)
     {

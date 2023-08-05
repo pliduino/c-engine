@@ -12,7 +12,6 @@ uniform vec3 CameraPos;
 
 void main(){
     float specularStrength = 0.5;
-    float shininess = 200;
     vec3 ambient = vec3(0.1, 0.1, 0.1);
     vec3 lightColor = vec3(1, 1, 1);
 
@@ -24,8 +23,11 @@ void main(){
 
     vec3 reflectDir = reflect(-lightDir, norm);
     vec3 viewDir = normalize(CameraPos - FragPos);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 specular = specularStrength * spec * lightColor;
+
+
+
 
     vec3 result = (ambient + diffuse + specular) * vec3(1, 1, 1);
 

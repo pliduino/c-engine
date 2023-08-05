@@ -9,8 +9,14 @@ void Component::Update()
 {
 }
 
+std::string Component::GetName()
+{
+    return this->name;
+}
+
 Component::Component()
 {
+    name = "Generic Component";
     parent = NULL;
 }
 
