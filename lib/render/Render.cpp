@@ -90,6 +90,28 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     {
         transformToMove->position.z -= 0.3;
     }
+
+    const float rotSpeed = 0.1;
+
+    if (key == GLFW_KEY_Q && action == GLFW_REPEAT)
+    {
+        transformToMove->rotation *= Quaternion::FromEulerAngle(0, -rotSpeed, 0);
+    }
+
+    if (key == GLFW_KEY_E && action == GLFW_REPEAT)
+    {
+        transformToMove->rotation *= Quaternion::FromEulerAngle(0, +rotSpeed, 0);
+    }
+
+    if (key == GLFW_KEY_F && action == GLFW_REPEAT)
+    {
+        transformToMove->rotation *= Quaternion::FromEulerAngle(-rotSpeed, 0, 0);
+    }
+
+    if (key == GLFW_KEY_R && action == GLFW_REPEAT)
+    {
+        transformToMove->rotation *= Quaternion::FromEulerAngle(+rotSpeed, 0, 0);
+    }
 }
 
 static void error_callback(int error, const char *description)
@@ -99,7 +121,6 @@ static void error_callback(int error, const char *description)
 
 void Render::render(Scene *scn)
 {
-    int tab = 0;
     this->scene = scn;
     Transform *transformToMove = scn->mainCamera->transform;
 
@@ -167,52 +188,8 @@ void Render::render(Scene *scn)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        ImGui::Begin("Scene");
 
-        ImGui::SameLine();
-        if (ImGui::Button("Scene"))
-        {
-            tab = 0;
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Debug"))
-        {
-            tab = 1;
-        }
-
-        if (tab == 0)
-        {
-            for (int i = 0; i < scene->objects.size(); i++)
-            {
-                if (ImGui::Button(scene->objects[i]->name.c_str()))
-                {
-                    auto newTransform = scene->objects[i]->GetComponent<Transform>();
-                    if (newTransform != NULL)
-                    {
-                        transformToMove = newTransform;
-                    }
-                    else
-                    {
-                        std::cout << "This object has no transform" << std::endl;
-                    }
-                }
-                for (auto component : scene->objects[i]->GetComponents())
-                {
-                    ImGui::Text("  - %s", component->GetName().c_str());
-                }
-            }
-        }
-
-        if (tab == 1)
-        {
-            if (showFps)
-            {
-                ImGui::Text("FPS: %.2f", fps);
-            }
-            ImGui::Text("Ms: %.2f", mspf);
-        }
-
-        ImGui::End();
+        ImGUI(transformToMove);
 
         Draw(scene->mainCamera, scene->mainCamera->transform);
 
@@ -222,11 +199,8 @@ void Render::render(Scene *scn)
         scene->Update();
 
         glfwPollEvents();
-
         mspf = ((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - lastNow)).count();
-
         glfwSwapBuffers(window);
-
         fps = (1000 / ((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - lastNow)).count());
     }
 
@@ -351,10 +325,13 @@ inline void Render::GenBuffers()
 
 inline void Render::Draw(Camera *camera, Transform *transform)
 {
+    glm::vec3 lookVector = glm::rotate(glm::quat(transform->rotation.w, transform->rotation.x, transform->rotation.y, transform->rotation.z),
+                                       glm::vec3(0, 0, 1)) +
+                           glm::vec3(transform->position.x, transform->position.y, transform->position.z);
 
     glm::mat4 view = glm::lookAt(
         glm::vec3(transform->position.x, transform->position.y, transform->position.z),
-        glm::vec3(0, 0, 0), // and looks at the origin
+        lookVector,
         glm::vec3(0, 1, 0));
 
     glm::mat4 projection = glm::perspective(camera->fov, 4.0f / 3.0f, camera->near, camera->far);
@@ -424,6 +401,59 @@ inline void Render::Init()
     // Depth culling
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+}
+
+inline void Render::ImGUI(Transform *&transformToMove)
+{
+    static int tab = 0;
+    ImGui::Begin("Scene");
+
+    ImGui::SameLine();
+    if (ImGui::Button("Scene"))
+    {
+        tab = 0;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Debug"))
+    {
+        tab = 1;
+    }
+
+    // Scene
+    if (tab == 0)
+    {
+        for (int i = 0; i < scene->objects.size(); i++)
+        {
+            if (ImGui::Button(scene->objects[i]->name.c_str()))
+            {
+                auto newTransform = scene->objects[i]->GetComponent<Transform>();
+                if (newTransform != NULL)
+                {
+                    transformToMove = newTransform;
+                }
+                else
+                {
+                    std::cout << "This object has no transform" << std::endl;
+                }
+            }
+            for (auto component : scene->objects[i]->GetComponents())
+            {
+                ImGui::Text("  - %s", component->GetName().c_str());
+            }
+        }
+    }
+
+    // Debug
+    if (tab == 1)
+    {
+        if (showFps)
+        {
+            ImGui::Text("FPS: %.2f", fps);
+        }
+        ImGui::Text("Ms: %.2f", mspf);
+    }
+
+    ImGui::End();
 }
 
 inline void Render::RenderObject(ModelRenderer *modelRenderer, glm::mat4 view, glm::mat4 projection)

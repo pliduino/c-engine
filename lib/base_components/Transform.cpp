@@ -7,7 +7,7 @@ Transform::Transform(/* args */)
 {
     name = "Transform";
     position = Vector3();
-    rotation = {0};
+    rotation = Quaternion();
     scale = Vector3(1.0, 1.0, 1.0);
 }
 

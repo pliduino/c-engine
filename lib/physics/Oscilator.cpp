@@ -5,6 +5,7 @@
 
 Oscilator::Oscilator(float frequency, float amplitude)
 {
+    this->name = "Oscilator";
     this->frequency = frequency;
     this->amplitude = amplitude;
     this->cur = 0;

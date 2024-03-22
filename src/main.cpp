@@ -61,6 +61,7 @@ int main(int argc, char const *argv[])
     scene->Start();
 
     camera->transform->position = Vector3(0.0, 0.0, 5.0);
+    camera->transform->rotation = Quaternion::FromEulerAngle(0, 0, 0);
     model->transform->position = Vector3(0.0, 2.0, 0.0);
     model->transform->scale = Vector3(0.1);
     model2->transform->position = Vector3(3.0, 0.0, 0.0);

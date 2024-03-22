@@ -16,6 +16,7 @@ class GameObject;
 struct GLFWwindow;
 class Scene;
 class Camera;
+class Transform;
 
 class Render
 {
@@ -30,12 +31,15 @@ private:
 
     Scene *scene;
 
-    bool showFps;
+    bool showFps, bindMouse = true;
 
     inline void GenBuffers();
     inline void Init();
     inline void Draw(Camera *camera, Transform *transform);
     inline void RenderObject(ModelRenderer *modelRenderer, glm::mat4 view, glm::mat4 projection);
+
+    // Will be removed later with proper UI implementations
+    inline void ImGUI(Transform *&transformToMove);
 
 public:
     Render(/* args */);

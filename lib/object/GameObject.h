@@ -28,8 +28,8 @@ public:
     template <class T>
     Borrow<T> GetComponent();
 
-    template <class T>
-    bool TryGetComponent(Borrow<T> &component);
+    // template <class T>
+    // bool TryGetComponent(Borrow<T> &component);
 
     template <class T>
     void Require(Borrow<T> *arg);

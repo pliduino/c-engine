@@ -9,6 +9,7 @@
 
 BoxCollider::BoxCollider(/* args */)
 {
+    this->name = "Box Collider";
 }
 
 BoxCollider::~BoxCollider()
@@ -32,7 +33,8 @@ inline bool BoxCollider::IsPointInside(const Vector3 point)
     Vector3 maxCoords = boundingBox.center + boundingBox.bounds + transform->position;
     Vector3 minCoords = boundingBox.center - boundingBox.bounds + transform->position;
 
-    return point.x >= minCoords.x && point.x <= maxCoords.x &&
+    return point.x >= minCoords.x &&
+           point.x <= maxCoords.x &&
            point.y >= minCoords.y && point.y <= maxCoords.y &&
            point.z >= minCoords.z && point.z <= maxCoords.z;
 }

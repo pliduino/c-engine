@@ -25,7 +25,7 @@ std::vector<Borrow<Component>> GameObject::GetComponents()
     return components;
 }
 
-void GameObject::AddComponent(Borrow<Component> component)
+void GameObject::AddComponent(Owner<Component> component)
 {
     if (component == NULL || component->GetParent() != NULL)
     {
