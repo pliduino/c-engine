@@ -4,3 +4,4 @@ build
 .vscode
 -p
 external/
+aurora-engine-clang

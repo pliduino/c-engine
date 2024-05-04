@@ -1,0 +1,18 @@
+: 1
+name: aurora-engine
+version: 0.1.0-a.0.z
+language: c++
+summary: aurora-engine C++ executable
+license: other: proprietary ; Not free/open source.
+description-file: README.md
+url: https://example.org/aurora-engine
+email: liduinopedro@gmail.com
+#build-error-email: liduinopedro@gmail.com
+depends: * build2 >= 0.16.0
+depends: * bpkg >= 0.16.0
+depends: glm ^0.9.9
+depends: glfw ^3.3.8
+depends: glew ^2.2.0
+depends: libimgui-platform-glfw ^1.88.0
+depends: libimgui-render-opengl3 ^1.88.0
+#depends: libhello ^1.0.0

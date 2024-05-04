@@ -1,0 +1,9 @@
+folder_names
+CodeFileNames
+
+Prefixes:
+    G - GameObject
+    C - Component
+    T - Type (Structs, typedef)
+    E - Enums
+    I - Interface

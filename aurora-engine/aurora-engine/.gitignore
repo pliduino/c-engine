@@ -1,0 +1,5 @@
+aurora-engine
+
+# Testscript output directory (can be symlink).
+#
+test-aurora-engine
