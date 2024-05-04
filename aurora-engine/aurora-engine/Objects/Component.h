@@ -2,24 +2,24 @@
 
 #include <string>
 
-class GameObject;
+class GGameObject;
 
 class CComponent
 {
 private:
-    GameObject *parent;
+    GGameObject *Parent;
 
 protected:
-    std::string name;
+    std::string Name;
 
 public:
     CComponent(/* args */);
     virtual ~CComponent();
 
-    virtual void Start(void);
-    virtual void Update(void);
+    virtual void Start();
+    virtual void Update();
     std::string GetName();
 
-    GameObject *GetParent();
-    void SetParent(GameObject *parent);
+    GGameObject *GetParent();
+    void SetParent(GGameObject *parent);
 };

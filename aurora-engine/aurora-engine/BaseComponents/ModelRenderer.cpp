@@ -6,18 +6,18 @@
 #include <aurora-engine/Objects/GameObject.h>
 #include <aurora-engine/BaseComponents/Transform.h>
 
-ModelRenderer::ModelRenderer(/* args */)
+CModelRenderer::CModelRenderer(/* args */)
 {
-    name = "ModelRenderer";
-    model = new ObjReader();
+    Name = "ModelRenderer";
+    Model = new ObjReader();
 }
 
-ModelRenderer::~ModelRenderer()
+CModelRenderer::~CModelRenderer()
 {
-    delete this->model;
+    delete this->Model;
 }
 
-void ModelRenderer::Start()
+void CModelRenderer::Start()
 {
-    GetParent()->Require(&transform);
+    GetParent()->Require(&Transform);
 }

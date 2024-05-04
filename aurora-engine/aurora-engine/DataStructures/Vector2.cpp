@@ -4,19 +4,19 @@
 #include <sstream>
 #include <string>
 
-Vector2::Vector2()
+TVector2::TVector2()
 {
     this->x = 0.0;
     this->y = 0.0;
 }
 
-Vector2::Vector2(double x, double y)
+TVector2::TVector2(double x, double y)
 {
     this->x = x;
     this->y = y;
 }
 
-std::string Vector2::to_string()
+std::string TVector2::to_string()
 {
     std::string result;
     std::ostringstream out;
@@ -28,18 +28,18 @@ std::string Vector2::to_string()
     return result;
 }
 
-Vector2 Vector2::operator+(const Vector2 &vector)
+TVector2 TVector2::operator+(const TVector2 &vector)
 {
-    Vector2 result;
+    TVector2 result;
     result.x = this->x + vector.x;
     result.y = this->y + vector.y;
 
     return result;
 }
 
-Vector2 Vector2::operator-(const Vector2 &vector)
+TVector2 TVector2::operator-(const TVector2 &vector)
 {
-    Vector2 result;
+    TVector2 result;
     result.x = this->x + vector.x;
     result.y = this->y + vector.y;
 

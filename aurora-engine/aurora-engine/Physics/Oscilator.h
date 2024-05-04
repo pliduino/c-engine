@@ -2,12 +2,12 @@
 
 #include <aurora-engine/Objects/Component.h>
 
-class Transform;
+class CTransform;
 
 class Oscilator : public CComponent
 {
 private:
-    Transform *transform;
+    CTransform *transform;
     float frequency, amplitude;
     float cur;
     bool dir;

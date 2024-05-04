@@ -36,7 +36,7 @@ void ObjReader::ReadFile(const char *path)
                     v[i] = std::stof(word);
                 }
 
-                positions.push_back(Vector3(v[0], v[1], v[2]));
+                positions.push_back(TVector3(v[0], v[1], v[2]));
             }
             else if (word == "f")
             {
@@ -70,7 +70,7 @@ void ObjReader::ReadFile(const char *path)
                     vt[i] = std::stof(word);
                 }
 
-                textureCoordinates.push_back(Vector2(vt[0], vt[1]));
+                textureCoordinates.push_back(TVector2(vt[0], vt[1]));
             }
             else if (word == "vn")
             {
@@ -80,7 +80,7 @@ void ObjReader::ReadFile(const char *path)
                     vn[i] = std::stof(word);
                 }
 
-                normals.push_back(Vector3(vn[0], vn[1], vn[2]));
+                normals.push_back(TVector3(vn[0], vn[1], vn[2]));
             }
         }
     }

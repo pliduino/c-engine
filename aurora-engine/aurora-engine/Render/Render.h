@@ -1,44 +1,42 @@
 #pragma once
 
-#include <unordered_map>
 #include <string>
 
 #include <glm/glm.hpp>
 
+#include <aurora-engine/Render/Material.h>
+
 class Scene;
-class ModelRenderer;
-class Transform;
+class CModelRenderer;
+class CTransform;
 
 typedef unsigned int GLuint;
 
-class GameObject;
-struct GLFWwindow;
+class GGameObject;
 class Scene;
-class Camera;
-class Transform;
+class GCamera;
+class CTransform;
+struct GLFWwindow;
 
 class Render
 {
 private:
     GLFWwindow *window;
-    std::unordered_map<std::string, unsigned int> programIds;
     double fps;
     double mspf;
 
     GLuint vbo, depthMapFBO, depthMap,
         vertex_array;
 
-    Scene *scene;
-
     bool showFps, bindMouse = true;
 
     inline void GenBuffers();
     inline void Init();
-    inline void Draw(Camera *camera, Transform *transform);
-    inline void RenderObject(ModelRenderer *modelRenderer, glm::mat4 view, glm::mat4 projection);
+    inline void Draw(GCamera *camera, CTransform *transform);
+    inline void RenderObject(CModelRenderer *modelRenderer, glm::mat4 view, glm::mat4 projection);
 
     // Will be removed later with proper UI implementations
-    inline void ImGUI(Transform *&transformToMove);
+    inline void ImGUI(CTransform *&transformToMove);
 
 public:
     Render(/* args */);
@@ -47,4 +45,5 @@ public:
 
     Render *ShowFps();
     Render *HideFps();
+    Scene *scene;
 };

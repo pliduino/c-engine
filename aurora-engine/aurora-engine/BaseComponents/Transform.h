@@ -6,20 +6,20 @@
 #include <aurora-engine/DataStructures/Vector3.h>
 #include <aurora-engine/DataStructures/Quaternion.h>
 
-class Transform : public CComponent
+class CTransform : public CComponent
 {
 private:
     /* data */
 public:
-    Vector3 position;
-    Vector3 scale;
-    Quaternion rotation;
+    TVector3 Position;
+    TVector3 Scale;
+    TQuaternion Rotation;
 
-    Transform(/* args */);
-    ~Transform();
+    CTransform(/* args */);
+    ~CTransform();
 
     void Start() override;
     void Update() override;
 
-    friend std::ostream &operator<<(std::ostream &os, const Transform &t);
+    friend std::ostream &operator<<(std::ostream &os, const CTransform &t);
 };

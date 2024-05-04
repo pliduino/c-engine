@@ -5,7 +5,7 @@
 
 Oscilator::Oscilator(float frequency, float amplitude)
 {
-    this->name = "Oscilator";
+    this->Name = "Oscilator";
     this->frequency = frequency;
     this->amplitude = amplitude;
     this->cur = 0;
@@ -18,7 +18,7 @@ Oscilator::~Oscilator()
 
 void Oscilator::Start()
 {
-    GetParent()->Require<Transform>(&transform);
+    GetParent()->Require<CTransform>(&transform);
 }
 
 void Oscilator::Update()
@@ -26,7 +26,7 @@ void Oscilator::Update()
     if (dir)
     {
         cur += (frequency * amplitude);
-        transform->position.x += frequency * amplitude;
+        transform->Position.x += frequency * amplitude;
         if (cur >= amplitude)
         {
             dir = false;
@@ -35,7 +35,7 @@ void Oscilator::Update()
     else
     {
         cur -= (frequency * amplitude);
-        transform->position.x -= frequency * amplitude;
+        transform->Position.x -= frequency * amplitude;
         if (cur <= -amplitude)
         {
             dir = true;

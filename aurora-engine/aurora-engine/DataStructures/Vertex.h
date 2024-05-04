@@ -1,12 +1,12 @@
 #include <aurora-engine/DataStructures/Vector2.h>
 #include <aurora-engine/DataStructures/Vector3.h>
 
-struct Vertex
+struct TVertex
 {
-    Vector3 position;
-    Vector2 textureCoordinates;
-    Vector3 normal;
+    TVector3 Position;
+    TVector2 TextureCoordinates;
+    TVector3 Normal;
 
-    Vertex();
-    Vertex(Vector3 pos, Vector3 normal, Vector2 tex);
+    TVertex();
+    TVertex(TVector3 pos, TVector3 normal, TVector2 tex);
 };

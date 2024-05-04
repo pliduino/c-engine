@@ -5,29 +5,29 @@
 
 #include <aurora-engine/Objects/Component.h>
 #include <aurora-engine/BaseComponents/Transform.h>
+#include <aurora-engine/Render/Material.h>
 
 class ObjReader;
 
-enum ModelType
+enum class EModelType
 {
     Static = 0,
     Dynamic = 1,
 };
 
-class ModelRenderer : public CComponent
+class CModelRenderer : public CComponent
 {
 private:
     /* data */
 public:
-    std::string shader;
-    std::string fragShader;
-    ObjReader *model;
+    TMaterial *Material;
+    ObjReader *Model;
 
-    ModelType type;
-    ModelRenderer(/* args */);
-    ~ModelRenderer();
+    EModelType Type;
+    CModelRenderer(/* args */);
+    ~CModelRenderer();
 
-    Transform *transform;
+    CTransform *Transform;
 
-    void Start() override;
+    virtual void Start() override;
 };

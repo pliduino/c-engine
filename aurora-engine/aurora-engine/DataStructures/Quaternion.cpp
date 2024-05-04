@@ -5,16 +5,16 @@
 
 #include <aurora-engine/DataStructures/Vector3.h>
 
-std::ostream &operator<<(std::ostream &os, const Quaternion &q)
+std::ostream &operator<<(std::ostream &os, const TQuaternion &q)
 {
     os << "{ " << q.x << ", " << q.y << ", " << q.z << ", " << q.w << " }";
 
     return os;
 }
 
-Vector3 Quaternion::ToEulerAngle()
+TVector3 TQuaternion::ToEulerAngle()
 {
-    Vector3 eulerAngle;
+    TVector3 eulerAngle;
 
     double sinr_cosp = 2 * (this->w * this->x + this->y * this->z);
     double cosr_cosp = 1 - 2 * (this->x * this->x + this->y * this->y);
@@ -33,19 +33,19 @@ Vector3 Quaternion::ToEulerAngle()
     return eulerAngle;
 }
 
-Vector3 Quaternion::operator*(const Vector3 &v)
+TVector3 TQuaternion::operator*(const TVector3 &v)
 {
-    Vector3 rotatedVector;
-    Quaternion convertedVector = Quaternion(0, v.x, v.y, v.z);
+    TVector3 rotatedVector;
+    TQuaternion convertedVector = TQuaternion(0, v.x, v.y, v.z);
 
     rotatedVector.x = v.x;
 
     return rotatedVector;
 }
 
-Quaternion Quaternion::operator*(const Quaternion &q)
+TQuaternion TQuaternion::operator*(const TQuaternion &q)
 {
-    Quaternion newQuaternion;
+    TQuaternion newQuaternion;
     newQuaternion.w = (this->w * q.w) - (this->x * q.x) - (this->y * q.y) - (this->z * q.z);
     newQuaternion.x = (this->w * q.x) + (this->x * q.w) + (this->y * q.z) - (this->z * q.y);
     newQuaternion.y = (this->w * q.y) - (this->x * q.z) + (this->y * q.w) + (this->z * q.x);
@@ -53,9 +53,9 @@ Quaternion Quaternion::operator*(const Quaternion &q)
     return newQuaternion;
 }
 
-Quaternion &Quaternion::operator*=(const Quaternion &q)
+TQuaternion &TQuaternion::operator*=(const TQuaternion &q)
 {
-    Quaternion newValue = *this * q;
+    TQuaternion newValue = *this * q;
 
     this->w = newValue.w;
     this->x = newValue.x;
@@ -65,7 +65,7 @@ Quaternion &Quaternion::operator*=(const Quaternion &q)
     return *this;
 }
 
-Quaternion::Quaternion()
+TQuaternion::TQuaternion()
 {
     this->w = 0;
     this->x = 0;
@@ -73,7 +73,7 @@ Quaternion::Quaternion()
     this->z = 0;
 }
 
-Quaternion::Quaternion(double w, double x, double y, double z)
+TQuaternion::TQuaternion(double w, double x, double y, double z)
 {
     this->w = w;
     this->x = x;
@@ -81,7 +81,7 @@ Quaternion::Quaternion(double w, double x, double y, double z)
     this->z = z;
 }
 
-Quaternion Quaternion::FromEulerAngle(const double roll, const double pitch, const double yaw)
+TQuaternion TQuaternion::FromEulerAngle(const double roll, const double pitch, const double yaw)
 {
     double cr = cos(roll * 0.5);
     double sr = sin(roll * 0.5);
@@ -90,7 +90,7 @@ Quaternion Quaternion::FromEulerAngle(const double roll, const double pitch, con
     double cy = cos(yaw * 0.5);
     double sy = sin(yaw * 0.5);
 
-    Quaternion q;
+    TQuaternion q;
     q.w = cr * cp * cy + sr * sp * sy;
     q.x = sr * cp * cy - cr * sp * sy;
     q.y = cr * sp * cy + sr * cp * sy;

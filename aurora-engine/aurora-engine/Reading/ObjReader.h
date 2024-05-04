@@ -23,9 +23,9 @@ class ObjReader
 {
 private:
 public:
-    std::vector<Vector3> positions;
-    std::vector<Vector2> textureCoordinates;
-    std::vector<Vector3> normals;
+    std::vector<TVector3> positions;
+    std::vector<TVector2> textureCoordinates;
+    std::vector<TVector3> normals;
 
     std::vector<float> vertexData;
 

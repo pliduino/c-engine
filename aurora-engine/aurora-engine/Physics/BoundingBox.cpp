@@ -5,10 +5,10 @@ BoundingBox::BoundingBox()
 {
 }
 
-BoundingBox::BoundingBox(const Vector3 *vertices, const size_t vertice_count)
+BoundingBox::BoundingBox(const TVector3 *vertices, const size_t vertice_count)
 {
-    Vector3 minCoords = Vector3(vertices[0]);
-    Vector3 maxCoords = Vector3(vertices[0]);
+    TVector3 minCoords = TVector3(vertices[0]);
+    TVector3 maxCoords = TVector3(vertices[0]);
 
     for (size_t i = 1; i < vertice_count; i++)
     {
@@ -27,8 +27,8 @@ BoundingBox::BoundingBox(const Vector3 *vertices, const size_t vertice_count)
 
 BoundingBox::BoundingBox(const float *vertices, const size_t vertice_count)
 {
-    Vector3 minCoords = Vector3(vertices[0], vertices[1], vertices[2]);
-    Vector3 maxCoords = Vector3(vertices[0], vertices[1], vertices[2]);
+    TVector3 minCoords = TVector3(vertices[0], vertices[1], vertices[2]);
+    TVector3 maxCoords = TVector3(vertices[0], vertices[1], vertices[2]);
 
     for (size_t i = 1; i < vertice_count; i++)
     {

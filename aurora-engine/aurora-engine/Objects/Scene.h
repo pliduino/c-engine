@@ -4,16 +4,17 @@
 #include <aurora-engine/Pointers/Pointers.h>
 
 class Camera;
+class GCamera;
 
-class GameObject;
+class GGameObject;
 
 class Scene
 {
 private:
     /* data */
 public:
-    Borrow<Camera> mainCamera;
-    std::vector<Owner<GameObject>> objects;
+    Borrow<GCamera> mainCamera;
+    std::vector<Owner<GGameObject>> objects;
 
     Scene(/* args */);
     ~Scene();

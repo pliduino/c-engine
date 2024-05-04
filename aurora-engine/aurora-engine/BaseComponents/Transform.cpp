@@ -3,28 +3,28 @@
 #include <iostream>
 #include <format>
 
-Transform::Transform(/* args */)
+CTransform::CTransform(/* args */)
 {
-    name = "Transform";
-    position = Vector3();
-    rotation = Quaternion();
-    scale = Vector3(1.0, 1.0, 1.0);
+    Name = "Transform";
+    Position = TVector3();
+    Rotation = TQuaternion();
+    Scale = TVector3(1.0, 1.0, 1.0);
 }
 
-Transform::~Transform()
+CTransform::~CTransform()
 {
 }
 
-std::ostream &operator<<(std::ostream &os, const Transform &t)
+std::ostream &operator<<(std::ostream &os, const CTransform &t)
 {
-    os << "Transform{ position: " << t.position << " rotation: " << t.rotation << " scale: " << t.scale << " }";
+    os << "Transform{ position: " << t.Position << " rotation: " << t.Rotation << " scale: " << t.Scale << " }";
     return os;
 }
 
-void Transform::Start()
+void CTransform::Start()
 {
 }
 
-void Transform::Update()
+void CTransform::Update()
 {
 }

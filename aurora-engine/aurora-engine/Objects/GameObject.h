@@ -4,22 +4,20 @@
 #include <vector>
 #include <aurora-engine/Pointers/Pointers.h>
 
-class Transform;
+class CTransform;
 class CComponent;
 
-class GameObject
+class GGameObject
 {
 private:
-    std::vector<Owner<CComponent>> components;
+    std::vector<Owner<CComponent>> Components;
 
 public:
-    std::string name;
+    std::string Name;
 
-    Owner<std::string> test;
-
-    GameObject(/* args */);
-    GameObject(std::string name);
-    ~GameObject();
+    GGameObject(/* args */);
+    GGameObject(std::string name);
+    ~GGameObject();
 
     std::vector<Borrow<CComponent>> GetComponents();
 
@@ -38,14 +36,27 @@ public:
     template <class... R>
     void Require(R... args);
 
-    void AddComponent(Owner<CComponent> component);
+    template <typename T>
+    Borrow<T> AddComponent(Owner<T> component)
+    {
+        if (component == nullptr || component->GetParent() != nullptr)
+        {
+            return nullptr;
+        }
+
+        component->SetParent(this);
+        Components.push_back(component);
+        return component;
+    }
+
+    virtual void Start(){};
 };
 
 template <class T>
-Borrow<T> GameObject::GetComponent()
+Borrow<T> GGameObject::GetComponent()
 {
     Borrow<T> value;
-    for (auto &component : components)
+    for (auto &component : Components)
     {
         value = dynamic_cast<T *>(component);
 
@@ -57,12 +68,12 @@ Borrow<T> GameObject::GetComponent()
 }
 
 template <class T>
-std::vector<Borrow<T>> GameObject::GetComponents()
+std::vector<Borrow<T>> GGameObject::GetComponents()
 {
     std::vector<T *> componentVector = new std::vector<T *>();
 
     T *value;
-    for (auto &component : components)
+    for (auto &component : Components)
     {
         value = dynamic_cast<T *>(component);
 
@@ -74,7 +85,7 @@ std::vector<Borrow<T>> GameObject::GetComponents()
 }
 
 template <class T>
-void GameObject::Require(Borrow<T> *arg)
+void GGameObject::Require(Borrow<T> *arg)
 {
     *arg = GetComponent<T>();
 
@@ -86,7 +97,7 @@ void GameObject::Require(Borrow<T> *arg)
 }
 
 template <class... R>
-void GameObject::Require(R... args)
+void GGameObject::Require(R... args)
 {
     (Require(args), ...);
 }

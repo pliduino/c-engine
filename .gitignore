@@ -5,3 +5,4 @@ build
 -p
 external/
 aurora-engine-clang
+*/imgui.ini

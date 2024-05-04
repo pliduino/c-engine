@@ -4,15 +4,15 @@
 
 // #include "./Vector3.h"
 
-struct Vector2
+struct TVector2
 {
     double x, y;
 
-    Vector2();
-    Vector2(double x, double y);
+    TVector2();
+    TVector2(double x, double y);
 
     std::string to_string();
-    Vector2 operator+(const Vector2 &vector);
-    Vector2 operator-(const Vector2 &vector);
+    TVector2 operator+(const TVector2 &vector);
+    TVector2 operator-(const TVector2 &vector);
     // operator Vector3();
 };

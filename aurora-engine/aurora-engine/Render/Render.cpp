@@ -24,15 +24,15 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-#include <aurora-engine/BaseComponents/Camera.h>
 #include <aurora-engine/Objects/Scene.h>
 #include <aurora-engine/Objects/GameObject.h>
 #include <aurora-engine/BaseComponents/ModelRenderer.h>
 #include <aurora-engine/BaseComponents/Transform.h>
 #include <aurora-engine/Reading/BmpLoader.h>
 #include <aurora-engine/Reading/ObjReader.h>
+#include <aurora-engine/BaseGameObjects/Camera.h>
 
-static inline glm::mat4 CalcMVP(const Transform *transform);
+static inline glm::mat4 CalcMVP(const CTransform *transform);
 static GLuint LoadShaders(const char *vertex_file_path, const char *fragment_file_path);
 
 Render::Render(/* args */)
@@ -57,60 +57,60 @@ Render *Render::HideFps()
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    Transform *transformToMove = *(Transform **)glfwGetWindowUserPointer(window);
+    Render *render = (Render *)glfwGetWindowUserPointer(window);
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 
     if (key == GLFW_KEY_A && action == GLFW_REPEAT)
     {
-        transformToMove->position.x -= 0.3;
+        render->scene->mainCamera->Transform->Position.x -= 0.3;
     }
 
     if (key == GLFW_KEY_D && action == GLFW_REPEAT)
     {
-        transformToMove->position.x += 0.3;
+        render->scene->mainCamera->Transform->Position.x += 0.3;
     }
 
     if (key == GLFW_KEY_SPACE && action == GLFW_REPEAT)
     {
-        transformToMove->position.y += 0.3;
+        render->scene->mainCamera->Transform->Position.y += 0.3;
     }
 
     if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_REPEAT)
     {
-        transformToMove->position.y -= 0.3;
+        render->scene->mainCamera->Transform->Position.y -= 0.3;
     }
 
     if (key == GLFW_KEY_W && action == GLFW_REPEAT)
     {
-        transformToMove->position.z += 0.3;
+        render->scene->mainCamera->Transform->Position.z += 0.3;
     }
 
     if (key == GLFW_KEY_S && action == GLFW_REPEAT)
     {
-        transformToMove->position.z -= 0.3;
+        render->scene->mainCamera->Transform->Position.z -= 0.3;
     }
 
     const float rotSpeed = 0.1;
 
     if (key == GLFW_KEY_Q && action == GLFW_REPEAT)
     {
-        transformToMove->rotation *= Quaternion::FromEulerAngle(0, -rotSpeed, 0);
+        render->scene->mainCamera->Transform->Rotation *= TQuaternion::FromEulerAngle(0, -rotSpeed, 0);
     }
 
     if (key == GLFW_KEY_E && action == GLFW_REPEAT)
     {
-        transformToMove->rotation *= Quaternion::FromEulerAngle(0, +rotSpeed, 0);
+        render->scene->mainCamera->Transform->Rotation *= TQuaternion::FromEulerAngle(0, +rotSpeed, 0);
     }
 
     if (key == GLFW_KEY_F && action == GLFW_REPEAT)
     {
-        transformToMove->rotation *= Quaternion::FromEulerAngle(-rotSpeed, 0, 0);
+        render->scene->mainCamera->Transform->Rotation *= TQuaternion::FromEulerAngle(-rotSpeed, 0, 0);
     }
 
     if (key == GLFW_KEY_R && action == GLFW_REPEAT)
     {
-        transformToMove->rotation *= Quaternion::FromEulerAngle(+rotSpeed, 0, 0);
+        render->scene->mainCamera->Transform->Rotation *= TQuaternion::FromEulerAngle(+rotSpeed, 0, 0);
     }
 }
 
@@ -122,11 +122,11 @@ static void error_callback(int error, const char *description)
 void Render::render(Scene *scn)
 {
     this->scene = scn;
-    Transform *transformToMove = scn->mainCamera->transform;
+    CTransform *transformToMove = scn->mainCamera->Transform;
 
     Init();
 
-    glfwSetWindowUserPointer(window, &transformToMove);
+    glfwSetWindowUserPointer(window, this);
 
     GenBuffers();
 
@@ -191,7 +191,7 @@ void Render::render(Scene *scn)
 
         ImGUI(transformToMove);
 
-        Draw(scene->mainCamera, scene->mainCamera->transform);
+        Draw(scene->mainCamera, scene->mainCamera->Transform);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -212,18 +212,17 @@ void Render::render(Scene *scn)
     return;
 }
 
-static inline glm::mat4 CalcMVP(const Transform *transform)
+static inline glm::mat4 CalcMVP(const CTransform *transform)
 {
-    glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(transform->position.x, transform->position.y, transform->position.z));
-    glm::mat4 rotate = glm::toMat4(glm::quat(transform->rotation.w, transform->rotation.x, transform->rotation.y, transform->rotation.z));
-    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(transform->scale.x, transform->scale.y, transform->scale.z));
+    glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(transform->Position.x, transform->Position.y, transform->Position.z));
+    glm::mat4 rotate = glm::toMat4(glm::quat(transform->Rotation.w, transform->Rotation.x, transform->Rotation.y, transform->Rotation.z));
+    glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(transform->Scale.x, transform->Scale.y, transform->Scale.z));
 
     return translate * scale * rotate;
 }
 
 static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragment_file_path)
 {
-
     // Create the shaders
     GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
     GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -240,7 +239,7 @@ static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragm
     }
     else
     {
-        printf("Impossible to open %s. Are you in the right directory ? Don't forget to read the FAQ !\n", vertex_file_path);
+        printf("Could not open %s.\n", vertex_file_path);
         getchar();
         return 0;
     }
@@ -323,18 +322,18 @@ inline void Render::GenBuffers()
     glGenFramebuffers(1, &depthMapFBO);
 }
 
-inline void Render::Draw(Camera *camera, Transform *transform)
+inline void Render::Draw(GCamera *camera, CTransform *transform)
 {
-    glm::vec3 lookVector = glm::rotate(glm::quat(transform->rotation.w, transform->rotation.x, transform->rotation.y, transform->rotation.z),
+    glm::vec3 lookVector = glm::rotate(glm::quat(transform->Rotation.w, transform->Rotation.x, transform->Rotation.y, transform->Rotation.z),
                                        glm::vec3(0, 0, 1)) +
-                           glm::vec3(transform->position.x, transform->position.y, transform->position.z);
+                           glm::vec3(transform->Position.x, transform->Position.y, transform->Position.z);
 
     glm::mat4 view = glm::lookAt(
-        glm::vec3(transform->position.x, transform->position.y, transform->position.z),
+        glm::vec3(transform->Position.x, transform->Position.y, transform->Position.z),
         lookVector,
         glm::vec3(0, 1, 0));
 
-    glm::mat4 projection = glm::perspective(camera->fov, 4.0f / 3.0f, camera->near, camera->far);
+    glm::mat4 projection = glm::perspective(camera->Fov, 4.0f / 3.0f, camera->Near, camera->Far);
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
@@ -342,7 +341,7 @@ inline void Render::Draw(Camera *camera, Transform *transform)
 
     for (auto &object : scene->objects)
     {
-        ModelRenderer *modelRenderer = object->GetComponent<ModelRenderer>();
+        CModelRenderer *modelRenderer = object->GetComponent<CModelRenderer>();
         if (modelRenderer == NULL)
         {
             continue;
@@ -403,7 +402,7 @@ inline void Render::Init()
     glDepthFunc(GL_LESS);
 }
 
-inline void Render::ImGUI(Transform *&transformToMove)
+inline void Render::ImGUI(CTransform *&transformToMove)
 {
     static int tab = 0;
     ImGui::Begin("Scene");
@@ -424,9 +423,9 @@ inline void Render::ImGUI(Transform *&transformToMove)
     {
         for (int i = 0; i < scene->objects.size(); i++)
         {
-            if (ImGui::Button(scene->objects[i]->name.c_str()))
+            if (ImGui::Button(scene->objects[i]->Name.c_str()))
             {
-                auto newTransform = scene->objects[i]->GetComponent<Transform>();
+                auto newTransform = scene->objects[i]->GetComponent<CTransform>();
                 if (newTransform != NULL)
                 {
                     transformToMove = newTransform;
@@ -456,25 +455,25 @@ inline void Render::ImGUI(Transform *&transformToMove)
     ImGui::End();
 }
 
-inline void Render::RenderObject(ModelRenderer *modelRenderer, glm::mat4 view, glm::mat4 projection)
+inline void Render::RenderObject(CModelRenderer *modelRenderer, glm::mat4 view, glm::mat4 projection)
 {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    glBufferData(GL_ARRAY_BUFFER, modelRenderer->model->vertexData.size() * sizeof(float), &modelRenderer->model->vertexData[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, modelRenderer->Model->vertexData.size() * sizeof(float), &modelRenderer->Model->vertexData[0], GL_STATIC_DRAW);
 
-    glm::mat4 model = CalcMVP(modelRenderer->transform);
+    glm::mat4 model = CalcMVP(modelRenderer->Transform);
 
     // Using Shader
     unsigned int programId;
-    auto iterId = programIds.find(modelRenderer->fragShader);
-    if (iterId == programIds.end())
+    if (!modelRenderer->Material->IsLoaded)
     {
-        programId = LoadShaders(modelRenderer->shader.c_str(), modelRenderer->fragShader.c_str());
-        programIds[modelRenderer->fragShader] = programId;
+        programId = LoadShaders(modelRenderer->Material->VertexShader.c_str(), modelRenderer->Material->FragmentShader.c_str());
+        modelRenderer->Material->IsLoaded = true;
+        modelRenderer->Material->Id = programId;
     }
     else
     {
-        programId = iterId->second;
+        programId = modelRenderer->Material->Id;
     }
 
     glUseProgram(programId);
@@ -486,12 +485,12 @@ inline void Render::RenderObject(ModelRenderer *modelRenderer, glm::mat4 view, g
     glUniformMatrix4fv(MatrixProjectionID, 1, GL_FALSE, &projection[0][0]);
 
     GLuint LightPosID = glGetUniformLocation(programId, "LightPos");
-    Vector3 light = scene->objects[0]->GetComponent<Transform>()->position;
+    TVector3 light = scene->objects[0]->GetComponent<CTransform>()->Position;
     glm::vec3 pos = glm::vec3(light.x, light.y, light.z);
     glUniform3fv(LightPosID, 1, &pos[0]);
 
     GLuint CameraPosID = glGetUniformLocation(programId, "CameraPos");
-    Vector3 cameraPosition = scene->mainCamera->transform->position;
+    TVector3 cameraPosition = scene->mainCamera->Transform->Position;
     glm::vec3 cameraPos = glm::vec3(cameraPosition.x, cameraPosition.y, cameraPosition.z);
     glUniform3fv(CameraPosID, 1, &cameraPos[0]);
 
@@ -509,5 +508,5 @@ inline void Render::RenderObject(ModelRenderer *modelRenderer, glm::mat4 view, g
         (void *)(0 * sizeof(GL_FLOAT)) // array buffer offset
     );
 
-    glDrawArrays(GL_TRIANGLES, 0, modelRenderer->model->vertexData.size() / 8);
+    glDrawArrays(GL_TRIANGLES, 0, modelRenderer->Model->vertexData.size() / 8);
 }

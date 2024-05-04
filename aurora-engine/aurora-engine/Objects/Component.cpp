@@ -12,28 +12,28 @@ void CComponent::Update()
 
 std::string CComponent::GetName()
 {
-    return this->name;
+    return this->Name;
 }
 
 CComponent::CComponent()
 {
-    name = "Generic Component";
-    parent = NULL;
+    Name = "Generic Component";
+    Parent = NULL;
 }
 
 CComponent::~CComponent()
 {
 }
 
-GameObject *CComponent::GetParent()
+GGameObject *CComponent::GetParent()
 {
-    return parent;
+    return Parent;
 }
 
-void CComponent::SetParent(GameObject *new_parent)
+void CComponent::SetParent(GGameObject *new_parent)
 {
-    if (parent != NULL)
+    if (Parent != NULL)
     {
     }
-    parent = new_parent;
+    Parent = new_parent;
 }

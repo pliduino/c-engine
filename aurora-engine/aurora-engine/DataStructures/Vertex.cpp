@@ -1,12 +1,12 @@
 #include "Vertex.h"
 
-Vertex::Vertex()
+TVertex::TVertex()
 {
 }
 
-Vertex::Vertex(Vector3 pos, Vector3 normal, Vector2 tex)
+TVertex::TVertex(TVector3 pos, TVector3 normal, TVector2 tex)
 {
-    this->position = pos;
-    this->normal = normal;
-    this->textureCoordinates = tex;
+    this->Position = pos;
+    this->Normal = normal;
+    this->TextureCoordinates = tex;
 }

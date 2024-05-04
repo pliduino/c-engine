@@ -1,4 +1,6 @@
-#include <aurora-engine/DataStructures/Array.h>
+#pragma once
+
+#include <aurora-engine/Containers/Array.h>
 
 #include <aurora-engine/DataStructures/Events/Function.h>
 

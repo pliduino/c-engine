@@ -3,19 +3,19 @@
 #include <string>
 #include <iostream>
 
-struct Vector3;
+struct TVector3;
 
-struct Quaternion
+struct TQuaternion
 {
     double w, x, y, z;
 
-    Quaternion();
-    Quaternion(double w, double x, double y, double z);
+    TQuaternion();
+    TQuaternion(double w, double x, double y, double z);
 
-    static Quaternion FromEulerAngle(const double roll, const double pitch, const double yaw);
-    Vector3 ToEulerAngle();
-    friend std::ostream &operator<<(std::ostream &os, const Quaternion &q);
-    Vector3 operator*(const Vector3 &v);
-    Quaternion operator*(const Quaternion &q);
-    Quaternion &operator*=(const Quaternion &q);
+    static TQuaternion FromEulerAngle(const double roll, const double pitch, const double yaw);
+    TVector3 ToEulerAngle();
+    friend std::ostream &operator<<(std::ostream &os, const TQuaternion &q);
+    TVector3 operator*(const TVector3 &v);
+    TQuaternion operator*(const TQuaternion &q);
+    TQuaternion &operator*=(const TQuaternion &q);
 };

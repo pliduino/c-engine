@@ -2,37 +2,25 @@
 
 #include <aurora-engine/Objects/Component.h>
 
-GameObject::GameObject()
+GGameObject::GGameObject()
 {
-    name = "No name";
+    Name = "No name";
 }
 
-GameObject::GameObject(std::string name)
+GGameObject::GGameObject(std::string name)
 {
-    this->name = name;
+    this->Name = name;
 }
 
-GameObject::~GameObject()
+GGameObject::~GGameObject()
 {
-    for (int i = 0; i < components.size(); i++)
+    for (int i = 0; i < Components.size(); i++)
     {
-        delete components[i];
+        delete Components[i];
     }
 }
 
-std::vector<Borrow<CComponent>> GameObject::GetComponents()
+std::vector<Borrow<CComponent>> GGameObject::GetComponents()
 {
-    return components;
-}
-
-void GameObject::AddComponent(Owner<CComponent> component)
-{
-    if (component == NULL || component->GetParent() != NULL)
-    {
-        return;
-    }
-
-    component->SetParent(this);
-    components.push_back(component);
-    return;
+    return Components;
 }
