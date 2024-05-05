@@ -10,7 +10,7 @@
 #define LOG_VERBOSITY 0
 #endif
 
-namespace LogVerbosity
+namespace ELogVerbosity
 {
     enum Type
     {
@@ -21,33 +21,42 @@ namespace LogVerbosity
         Info = 4,
         Debug = 5,
     };
+
+    std::string EnumToString(ELogVerbosity::Type e);
 }
 
 template <typename... Args>
-inline void Log(const char *const scope, const LogVerbosity::Type verbosity,
+inline void Log(const char *const scope, const ELogVerbosity::Type verbosity,
                 const char *const message, Args... args)
 {
     if (verbosity <= LOG_VERBOSITY)
     {
         switch (verbosity)
         {
-        case LogVerbosity::Fatal:
-            std::cout << "\033[31;42m";
-            break;
-        case LogVerbosity::Error:
+        case ELogVerbosity::Fatal:
             std::cout << "\033[1;31m";
             break;
-        case LogVerbosity::Warn:
+        case ELogVerbosity::Error:
+            std::cout << "\033[1;31m";
+            break;
+        case ELogVerbosity::Warn:
             std::cout << "\033[33m";
             break;
-        case LogVerbosity::Info:
+        case ELogVerbosity::Info:
             std::cout << "\033[34m";
             break;
         default:
             break;
         }
 
-        std::cout << std::setw(12) << std::left << scope << " | ";
+        std::cout << "[" << ELogVerbosity::EnumToString(verbosity) << "]";
+
+        if (scope[0] != 0)
+        {
+            std::cout << "[" << scope << "]";
+        }
+
+        std::cout << " ";
 
         ArgsPrint(message, args...);
 
@@ -61,7 +70,7 @@ inline void Log(const char *const scope, const LogVerbosity::Type verbosity,
 
 #define DECLARE_LOG(scope)                                          \
     template <typename... Args>                                     \
-    inline void Log##scope(const LogVerbosity::Type verbosity,      \
+    inline void Log##scope(const ELogVerbosity::Type verbosity,     \
                            const char *const message, Args... args) \
     {                                                               \
         Log(#scope, verbosity, message, args...);                   \

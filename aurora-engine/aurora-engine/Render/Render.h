@@ -6,6 +6,8 @@
 
 #include <aurora-engine/Render/Material.h>
 #include <aurora-engine/Log/Log.h>
+#include <aurora-engine/Render/Window/Window.h>
+#include <aurora-engine/Pointers/Pointers.h>
 
 class Scene;
 class CModelRenderer;
@@ -24,7 +26,7 @@ DECLARE_LOG(Render)
 class Render
 {
 private:
-    GLFWwindow *window;
+    Owner<IWindow> Window;
     double fps;
     double mspf;
 
@@ -42,9 +44,9 @@ private:
     inline void ImGUI(CTransform *&transformToMove);
 
 public:
-    Render(/* args */);
+    Render(IWindow *Window);
     ~Render();
-    void render(Scene *scene);
+    void RenderScene(Scene *scene);
 
     Render *ShowFps();
     Render *HideFps();

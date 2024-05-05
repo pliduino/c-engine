@@ -12,14 +12,13 @@
 #include <chrono>
 
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "std_image.h"
+#include <imgui.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -31,16 +30,19 @@
 #include <aurora-engine/Reading/BmpLoader.h>
 #include <aurora-engine/Reading/ObjReader.h>
 #include <aurora-engine/BaseGameObjects/Camera.h>
+#include <aurora-engine/Assertion/Assertion.h>
 
 static inline glm::mat4 CalcMVP(const CTransform *transform);
 static GLuint LoadShaders(const char *vertex_file_path, const char *fragment_file_path);
 
-Render::Render(/* args */)
+Render::Render(Owner<IWindow> Window)
 {
+    this->Window = Window;
 }
 
 Render::~Render()
 {
+    delete Window;
 }
 
 Render *Render::ShowFps()
@@ -55,78 +57,12 @@ Render *Render::HideFps()
     return this;
 }
 
-static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
-{
-    Render *render = (Render *)glfwGetWindowUserPointer(window);
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-
-    if (key == GLFW_KEY_A && action == GLFW_REPEAT)
-    {
-        render->scene->mainCamera->Transform->Position.x -= 0.3;
-    }
-
-    if (key == GLFW_KEY_D && action == GLFW_REPEAT)
-    {
-        render->scene->mainCamera->Transform->Position.x += 0.3;
-    }
-
-    if (key == GLFW_KEY_SPACE && action == GLFW_REPEAT)
-    {
-        render->scene->mainCamera->Transform->Position.y += 0.3;
-    }
-
-    if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_REPEAT)
-    {
-        render->scene->mainCamera->Transform->Position.y -= 0.3;
-    }
-
-    if (key == GLFW_KEY_W && action == GLFW_REPEAT)
-    {
-        render->scene->mainCamera->Transform->Position.z += 0.3;
-    }
-
-    if (key == GLFW_KEY_S && action == GLFW_REPEAT)
-    {
-        render->scene->mainCamera->Transform->Position.z -= 0.3;
-    }
-
-    const float rotSpeed = 0.1;
-
-    if (key == GLFW_KEY_Q && action == GLFW_REPEAT)
-    {
-        render->scene->mainCamera->Transform->Rotation *= TQuaternion::FromEulerAngle(0, -rotSpeed, 0);
-    }
-
-    if (key == GLFW_KEY_E && action == GLFW_REPEAT)
-    {
-        render->scene->mainCamera->Transform->Rotation *= TQuaternion::FromEulerAngle(0, +rotSpeed, 0);
-    }
-
-    if (key == GLFW_KEY_F && action == GLFW_REPEAT)
-    {
-        render->scene->mainCamera->Transform->Rotation *= TQuaternion::FromEulerAngle(-rotSpeed, 0, 0);
-    }
-
-    if (key == GLFW_KEY_R && action == GLFW_REPEAT)
-    {
-        render->scene->mainCamera->Transform->Rotation *= TQuaternion::FromEulerAngle(+rotSpeed, 0, 0);
-    }
-}
-
-static void error_callback(int error, const char *description)
-{
-    std::cerr << "Error: " << description;
-}
-
-void Render::render(Scene *scn)
+void Render::RenderScene(Scene *scn)
 {
     this->scene = scn;
     CTransform *transformToMove = scn->mainCamera->Transform;
 
     Init();
-
-    glfwSetWindowUserPointer(window, this);
 
     GenBuffers();
 
@@ -165,11 +101,9 @@ void Render::render(Scene *scn)
     glGenVertexArrays(1, &vertex_array);
     glBindVertexArray(vertex_array);
 
-    // Ties to monitor refresh rate
-    glfwSwapInterval(1);
-
     glClearColor(0.4f, 0.4f, 0.4f, 0.0f);
-    while (!glfwWindowShouldClose(window))
+
+    while (!Window->ShouldClose())
     {
         auto lastNow = std::chrono::high_resolution_clock::now();
 
@@ -180,7 +114,7 @@ void Render::render(Scene *scn)
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         int width, height;
-        glfwGetWindowSize(window, &width, &height);
+        Window->GetSize(width, height);
 
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -198,17 +132,14 @@ void Render::render(Scene *scn)
 
         scene->Update();
 
-        glfwPollEvents();
-        mspf = ((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - lastNow)).count();
-        glfwSwapBuffers(window);
-        fps = (1000 / ((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - lastNow)).count());
+        Window->Tick();
+        // mspf = ((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - lastNow)).count();
+        // fps = (1000 / ((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - lastNow)).count());
     }
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-    glfwDestroyWindow(window);
-    glfwTerminate();
     return;
 }
 
@@ -239,8 +170,7 @@ static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragm
     }
     else
     {
-        printf("Could not open %s.\n", vertex_file_path);
-        LogRender(LogVerbosity::Error, "Could not open {}", vertex_file_path);
+        LogRender(ELogVerbosity::Error, "Could not open {}", vertex_file_path);
         getchar();
         return 0;
     }
@@ -260,7 +190,7 @@ static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragm
     int InfoLogLength;
 
     // Compile Vertex Shader
-    LogRender(LogVerbosity::Info, "Compiling shader: {}", vertex_file_path);
+    LogRender(ELogVerbosity::Info, "Compiling shader: {}", vertex_file_path);
     char const *VertexSourcePointer = VertexShaderCode.c_str();
     glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
     glCompileShader(VertexShaderID);
@@ -272,11 +202,11 @@ static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragm
     {
         std::vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
         glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-        printf("%s\n", &VertexShaderErrorMessage[0]);
+        LogRender(ELogVerbosity::Error, &VertexShaderErrorMessage[0]);
     }
 
     // Compile Fragment Shader
-    LogRender(LogVerbosity::Info, "Compiling fragment shader: {}", fragment_file_path);
+    LogRender(ELogVerbosity::Info, "Compiling fragment shader: {}", fragment_file_path);
     char const *FragmentSourcePointer = FragmentShaderCode.c_str();
     glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
     glCompileShader(FragmentShaderID);
@@ -288,11 +218,11 @@ static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragm
     {
         std::vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
         glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-        printf("%s\n", &FragmentShaderErrorMessage[0]);
+        LogRender(ELogVerbosity::Error, &FragmentShaderErrorMessage[0]);
     }
 
     // Link the program
-    LogRender(LogVerbosity::Info, "Linking program");
+    LogRender(ELogVerbosity::Info, "Linking program");
     GLuint ProgramID = glCreateProgram();
     glAttachShader(ProgramID, VertexShaderID);
     glAttachShader(ProgramID, FragmentShaderID);
@@ -305,7 +235,7 @@ static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragm
     {
         std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
         glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-        printf("%s\n", &ProgramErrorMessage[0]);
+        LogRender(ELogVerbosity::Error, &ProgramErrorMessage[0]);
     }
 
     glDetachShader(ProgramID, VertexShaderID);
@@ -319,8 +249,12 @@ static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragm
 
 inline void Render::GenBuffers()
 {
+    LogRender(ELogVerbosity::Info, "Generating Buffers");
+
     glGenBuffers(1, &vbo);
     glGenFramebuffers(1, &depthMapFBO);
+
+    LogRender(ELogVerbosity::Info, "Generating Buffers [END]");
 }
 
 inline void Render::Draw(GCamera *camera, CTransform *transform)
@@ -357,50 +291,20 @@ inline void Render::Draw(GCamera *camera, CTransform *transform)
 
 inline void Render::Init()
 {
-    // Initializing GLFW
-    glfwSetErrorCallback(error_callback);
-    if (!glfwInit())
-    {
-        std::cerr << "GLFW init error";
-        return;
-    }
-    glfwWindowHint(GLFW_SAMPLES, 4); // MSAA Anti Aliasing
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    LogRender(ELogVerbosity::Info, "Initializing render");
 
-    // Initializing Window
-    window = glfwCreateWindow(1280, 720, "Aura", NULL, NULL);
-    if (!window)
-    {
-        std::cerr << "Window creation error";
-        glfwTerminate();
-        return;
-    }
-    glfwSetKeyCallback(window, key_callback);
-    glfwMakeContextCurrent(window);
+    Window->Init();
 
     // Initializing GLEW
     glewExperimental = true;
-    if (glewInit() != GLEW_OK)
-    {
-        std::cerr << "Failed to initialize GLEW";
-        return;
-    }
 
-    // Initializing IMGUI
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
-    ImGui_ImplGlfw_InitForOpenGL(window, true); // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
-    ImGui_ImplOpenGL3_Init();
+    verify(glewInit() == GLEW_OK, "Failed to initialize GLEW");
 
     // Depth culling
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+
+    LogRender(ELogVerbosity::Info, "Initializing render [END]");
 }
 
 inline void Render::ImGUI(CTransform *&transformToMove)
@@ -433,7 +337,7 @@ inline void Render::ImGUI(CTransform *&transformToMove)
                 }
                 else
                 {
-                    LogRender(LogVerbosity::Info, "This object has no transform");
+                    LogRender(ELogVerbosity::Info, "This object has no transform");
                 }
             }
             for (auto component : scene->objects[i]->GetComponents())

@@ -14,3 +14,4 @@ config.log_verbosity = 3
 
 cxx.poptions += "-I$out_root" "-I$src_root" "-I$src_root/lib/**/*"
 cxx.poptions += -DLOG_VERBOSITY=$config.log_verbosity
+cxx.poptions += -DASSERT

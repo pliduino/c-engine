@@ -17,6 +17,7 @@
 #include <aurora-engine/DataStructures/Events/Event.h>
 #include <aurora-engine/Render/Material.h>
 #include <aurora-engine/BaseGameObjects/Camera.h>
+#include <aurora-engine/Render/Window/WindowGLFW.h>
 
 int main(int argc, char const *argv[])
 {
@@ -71,9 +72,9 @@ int main(int argc, char const *argv[])
   modelPlane->Transform->Scale = TVector3(10, 0.01, 10);
   sphereModel->Transform->Position = TVector3(0);
 
-  Render *renderer = (new Render())->ShowFps();
+  Render *renderer = (new Render(new TWindowGLFW()))->ShowFps();
 
-  renderer->render(scene);
+  renderer->RenderScene(scene);
 
   delete renderer;
   delete scene;
