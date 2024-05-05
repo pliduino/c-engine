@@ -7,7 +7,6 @@ class CTransform;
 class GCamera : public GGameObject
 {
 private:
-    /* data */
 public:
     CTransform *Transform;
     float Fov;

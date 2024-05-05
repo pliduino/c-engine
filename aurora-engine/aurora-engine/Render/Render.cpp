@@ -240,6 +240,7 @@ static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragm
     else
     {
         printf("Could not open %s.\n", vertex_file_path);
+        LogRender(LogVerbosity::Error, "Could not open {}", vertex_file_path);
         getchar();
         return 0;
     }
@@ -259,7 +260,7 @@ static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragm
     int InfoLogLength;
 
     // Compile Vertex Shader
-    printf("Compiling shader : %s\n", vertex_file_path);
+    LogRender(LogVerbosity::Info, "Compiling shader: {}", vertex_file_path);
     char const *VertexSourcePointer = VertexShaderCode.c_str();
     glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
     glCompileShader(VertexShaderID);
@@ -275,7 +276,7 @@ static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragm
     }
 
     // Compile Fragment Shader
-    printf("Compiling shader : %s\n", fragment_file_path);
+    LogRender(LogVerbosity::Info, "Compiling fragment shader: {}", fragment_file_path);
     char const *FragmentSourcePointer = FragmentShaderCode.c_str();
     glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
     glCompileShader(FragmentShaderID);
@@ -291,7 +292,7 @@ static inline GLuint LoadShaders(const char *vertex_file_path, const char *fragm
     }
 
     // Link the program
-    printf("Linking program\n");
+    LogRender(LogVerbosity::Info, "Linking program");
     GLuint ProgramID = glCreateProgram();
     glAttachShader(ProgramID, VertexShaderID);
     glAttachShader(ProgramID, FragmentShaderID);
@@ -432,7 +433,7 @@ inline void Render::ImGUI(CTransform *&transformToMove)
                 }
                 else
                 {
-                    std::cout << "This object has no transform" << std::endl;
+                    LogRender(LogVerbosity::Info, "This object has no transform");
                 }
             }
             for (auto component : scene->objects[i]->GetComponents())

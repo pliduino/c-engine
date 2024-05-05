@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 
 #include <aurora-engine/Render/Material.h>
+#include <aurora-engine/Log/Log.h>
 
 class Scene;
 class CModelRenderer;
@@ -17,6 +18,8 @@ class Scene;
 class GCamera;
 class CTransform;
 struct GLFWwindow;
+
+DECLARE_LOG(Render)
 
 class Render
 {

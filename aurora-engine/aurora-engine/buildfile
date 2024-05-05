@@ -9,4 +9,8 @@ import libs += libimgui-render-opengl3%lib{imgui-render-opengl3}
 
 exe{aurora-engine}: {hxx ixx txx cxx}{**} $libs
 
-cxx.poptions =+ "-I$out_root" "-I$src_root" "-I$src_root/lib/**/*"
+# Sets default verbosity to Warn
+config.log_verbosity = 3
+
+cxx.poptions += "-I$out_root" "-I$src_root" "-I$src_root/lib/**/*"
+cxx.poptions += -DLOG_VERBOSITY=$config.log_verbosity
