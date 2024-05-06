@@ -19,8 +19,16 @@
 #include <aurora-engine/BaseGameObjects/Camera.h>
 #include <aurora-engine/Render/Window/WindowGLFW.h>
 
+DECLARE_LOG(Test)
+
 int main(int argc, char const *argv[])
 {
+  LogTest(ELogVerbosity::Fatal, "Fatal");
+  LogTest(ELogVerbosity::Error, "Error");
+  LogTest(ELogVerbosity::Warn, "Warn");
+  LogTest(ELogVerbosity::Info, "Info");
+  LogTest(ELogVerbosity::Debug, "Debug");
+
   TMaterial material_1 = {.VertexShader = "shaders/vertex.glsl", .FragmentShader = "shaders/fragment.glsl"};
 
   Scene *scene = new Scene();

@@ -1,7 +1,28 @@
 #pragma once
 
+#include <aurora-engine/DataStructures/Events/Event.h>
+
+enum class EKey
+{
+    A,
+    D,
+    E,
+    S,
+    W,
+};
+
+enum class EKeyState
+{
+    Pressed,
+    Hold,
+    Released,
+};
+
 class IWindow
 {
+public:
+    Event<EKey, EKeyState> OnKeyPress;
+
 protected:
     int Height, Width;
     bool isVsync = true;

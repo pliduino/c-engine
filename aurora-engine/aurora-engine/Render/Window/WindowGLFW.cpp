@@ -9,18 +9,22 @@
 
 static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
+    TWindowGLFW *windowGLFW = static_cast<TWindowGLFW *>(glfwGetWindowUserPointer(window));
+
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-    // if (key == GLFW_KEY_A && action == GLFW_REPEAT)
-    // {
-    //     render->scene->mainCamera->Transform->Position.x -= 0.3;
-    // }
+    if (key == GLFW_KEY_A && action == GLFW_PRESS)
+    {
+        windowGLFW->OnKeyPress.Invoke(EKey::A, EKeyState::Pressed);
+        // render->scene->mainCamera->Transform->Position.x -= 0.3;
+    }
 
-    // if (key == GLFW_KEY_D && action == GLFW_REPEAT)
-    // {
-    //     render->scene->mainCamera->Transform->Position.x += 0.3;
-    // }
+    if (key == GLFW_KEY_D && action == GLFW_PRESS)
+    {
+        windowGLFW->OnKeyPress.Invoke(EKey::D, EKeyState::Pressed);
+        // render->scene->mainCamera->Transform->Position.x += 0.3;
+    }
 
     // if (key == GLFW_KEY_SPACE && action == GLFW_REPEAT)
     // {
@@ -32,15 +36,17 @@ static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, i
     //     render->scene->mainCamera->Transform->Position.y -= 0.3;
     // }
 
-    // if (key == GLFW_KEY_W && action == GLFW_REPEAT)
-    // {
-    //     render->scene->mainCamera->Transform->Position.z += 0.3;
-    // }
+    if (key == GLFW_KEY_W && action == GLFW_PRESS)
+    {
+        windowGLFW->OnKeyPress.Invoke(EKey::W, EKeyState::Pressed);
+        // render->scene->mainCamera->Transform->Position.z += 0.3;
+    }
 
-    // if (key == GLFW_KEY_S && action == GLFW_REPEAT)
-    // {
-    //     render->scene->mainCamera->Transform->Position.z -= 0.3;
-    // }
+    if (key == GLFW_KEY_S && action == GLFW_PRESS)
+    {
+        windowGLFW->OnKeyPress.Invoke(EKey::S, EKeyState::Pressed);
+        // render->scene->mainCamera->Transform->Position.z -= 0.3;
+    }
 
     // const float rotSpeed = 0.1;
 
@@ -96,6 +102,7 @@ void TWindowGLFW::Init()
     }
 
     glfwSetErrorCallback(ErrorCallback);
+    glfwSetWindowUserPointer(window, this);
     glfwSetKeyCallback(window, KeyCallback);
     glfwMakeContextCurrent(window);
 
@@ -109,6 +116,8 @@ void TWindowGLFW::Init()
 
     // TODO: MOVE OUT OF THIS LATER
 
+    LogWindowGLFW(ELogVerbosity::Info, "Initializing ImGui");
+
     // Initializing IMGUI
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -118,7 +127,7 @@ void TWindowGLFW::Init()
     ImGui_ImplGlfw_InitForOpenGL(window, true); // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
     ImGui_ImplOpenGL3_Init();
 
-    LogWindowGLFW(ELogVerbosity::Info, "Initialized ImGui");
+    LogWindowGLFW(ELogVerbosity::Info, "Initializing ImGui [END]");
 }
 
 bool TWindowGLFW::ShouldClose()

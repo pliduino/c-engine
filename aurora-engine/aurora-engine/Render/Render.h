@@ -48,6 +48,8 @@ public:
     ~Render();
     void RenderScene(Scene *scene);
 
+    void OnKeyCallback(EKey key, EKeyState pressType);
+
     Render *ShowFps();
     Render *HideFps();
     Scene *scene;

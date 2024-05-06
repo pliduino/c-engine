@@ -1,15 +1,17 @@
 #pragma once
 
+#include <aurora-engine/Assertion/Assertion.h>
+
 template <typename T>
 class TArray
 {
 private:
-    T *Data = nullptr;
-    size_t Size = 0;
-    size_t Capacity = 0;
+    T *Data;
+    size_t Size;
+    size_t Capacity;
 
 public:
-    TArray(/* args */)
+    TArray()
     {
         Capacity = 1;
         Size = 0;
@@ -31,14 +33,21 @@ public:
         Data[Size++] = Value;
     }
 
+    size_t GetSize()
+    {
+        return Size;
+    }
+
     // Access Operators
     T &operator[](int index)
     {
+        check(index > 0 && index < Size, "Tried accessing out of bounds, index: {}, size: {}", index, Size);
         return Data[index];
     }
 
     T operator[](int index) const
     {
+        check(index > 0 && index < Size, "Tried accessing out of bounds, index: {}, size: {}", index, Size);
         return Data[index];
     }
 

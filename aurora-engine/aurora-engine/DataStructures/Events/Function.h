@@ -1,17 +1,35 @@
 #pragma once
 
-template <typename T>
+template <typename Return, typename... Args>
 class TFunction
 {
-    T *(FunctionPointer) = nullptr;
 
 public:
-    TFunction(){};
-    TFunction(T R) : FunctionPointer{R} {}
+    Return (*FunctionPointer)(Args...) = nullptr;
 
-    template <typename... Args>
-    auto operator()(Args... args)
+    TFunction(){};
+    TFunction(Return (*func)(Args...)) : FunctionPointer{func} {}
+
+    virtual Return operator()(Args... args)
     {
         return FunctionPointer(args...);
+    }
+};
+
+template <class C, typename Return, typename... Args>
+class TBoundFunction : public TFunction<Return, Args...>
+{
+    Return (C::*FunctionPointer)(Args...) = nullptr;
+    C *BoundObject = nullptr;
+
+public:
+    TBoundFunction(){};
+    TBoundFunction(C *Object, Return (C::*func)(Args...)) : FunctionPointer{func}, BoundObject{Object} {}
+
+    void test(){};
+
+    virtual Return operator()(Args... args) override
+    {
+        return (BoundObject->*FunctionPointer)(args...);
     }
 };

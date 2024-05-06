@@ -8,7 +8,7 @@ template <typename... Args>
 class Event
 {
 private:
-    TArray<TFunction<void(Args...)>> Functions;
+    TArray<TFunction<void, Args...> *> Functions;
 
 public:
     Event(){};
@@ -16,13 +16,13 @@ public:
 
     void Invoke(Args... args)
     {
-        for (TFunction function : Functions)
+        for (auto function : Functions)
         {
-            function(args...);
+            (*function)(args...);
         }
     };
 
-    void Subscribe(TFunction<void(Args...)> function)
+    void Subscribe(TFunction<void, Args...> *function)
     {
         Functions.Add(function);
     };

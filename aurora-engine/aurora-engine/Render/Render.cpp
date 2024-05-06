@@ -57,6 +57,19 @@ Render *Render::HideFps()
     return this;
 }
 
+void Render::OnKeyCallback(EKey key, EKeyState pressType)
+{
+    LogRender(ELogVerbosity::Debug, "Callback");
+    if (key == EKey::W)
+    {
+        scene->mainCamera->Transform->Position.z += 0.3;
+    }
+    if (key == EKey::S)
+    {
+        scene->mainCamera->Transform->Position.z -= 0.3;
+    }
+}
+
 void Render::RenderScene(Scene *scn)
 {
     this->scene = scn;
@@ -132,8 +145,8 @@ void Render::RenderScene(Scene *scn)
 
         scene->Update();
 
-        Window->Tick();
         // mspf = ((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - lastNow)).count();
+        Window->Tick();
         // fps = (1000 / ((std::chrono::duration<double, std::milli>)(std::chrono::high_resolution_clock::now() - lastNow)).count());
     }
 
@@ -294,6 +307,8 @@ inline void Render::Init()
     LogRender(ELogVerbosity::Info, "Initializing render");
 
     Window->Init();
+
+    Window->OnKeyPress.Subscribe(new TBoundFunction(this, &Render::OnKeyCallback));
 
     // Initializing GLEW
     glewExperimental = true;

@@ -10,6 +10,15 @@
 #define LOG_VERBOSITY 0
 #endif
 
+// TODO: Move this to a proper file
+namespace EAnsiColor
+{
+    constexpr char Black[] = "\033[30m";
+    constexpr char BoldRed[] = "\033[1;31m";
+    constexpr char Yellow[] = "\033[33m";
+    constexpr char Blue[] = "\033[34m";
+}
+
 namespace ELogVerbosity
 {
     enum Type
@@ -31,19 +40,23 @@ inline void Log(const char *const scope, const ELogVerbosity::Type verbosity,
 {
     if (verbosity <= LOG_VERBOSITY)
     {
+        // TODO: Introduce consts for these colors
         switch (verbosity)
         {
         case ELogVerbosity::Fatal:
-            std::cout << "\033[1;31m";
+            std::cout << EAnsiColor::BoldRed;
             break;
         case ELogVerbosity::Error:
-            std::cout << "\033[1;31m";
+            std::cout << EAnsiColor::BoldRed;
             break;
         case ELogVerbosity::Warn:
-            std::cout << "\033[33m";
+            std::cout << EAnsiColor::Yellow;
             break;
         case ELogVerbosity::Info:
-            std::cout << "\033[34m";
+            std::cout << EAnsiColor::Blue;
+            break;
+        case ELogVerbosity::Debug:
+            std::cout << EAnsiColor::Black;
             break;
         default:
             break;
