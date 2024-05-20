@@ -1,7 +1,7 @@
 *.o
 *.exe
-build
 .vscode
+build
 -p
 external/
 aurora-engine-clang
