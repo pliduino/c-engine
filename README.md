@@ -3,7 +3,7 @@
 To build simply run this command inside the aurora-engine folder
 
 ```
-  bdep init -C ../aurora-compiler-clang @clang cc config.cxx=clang++
+  bdep init -C ../aurora-engine-clang @clang cc config.cxx=clang++
   b config.log-verbosity=5
 ```
 
