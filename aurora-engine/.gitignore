@@ -1,31 +1,5 @@
-.bdep/
+aurora-engine
 
-# Local default options files.
+# Testscript output directory (can be symlink).
 #
-.build2/local/
-
-# Compiler/linker output.
-#
-*.d
-*.t
-*.i
-*.i.*
-*.ii
-*.ii.*
-*.o
-*.obj
-*.gcm
-*.pcm
-*.ifc
-*.so
-*.dylib
-*.dll
-*.a
-*.lib
-*.exp
-*.pdb
-*.ilk
-*.exe
-*.exe.dlls/
-*.exe.manifest
-*.pc
+test-aurora-engine
